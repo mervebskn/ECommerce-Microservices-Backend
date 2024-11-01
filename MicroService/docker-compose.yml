@@ -1,0 +1,46 @@
+services:
+  api_gateway:
+    build:
+      context: ./ApiGateway
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+    depends_on:
+      - auth_service
+      - product_service
+      - order_service
+      - inventory_service
+    networks:
+      - internal
+
+  auth_service:
+    build:
+      context: ./AuthService
+      dockerfile: Dockerfile
+    networks:
+      - internal
+
+  product_service:
+    build:
+      context: ./ProductService
+      dockerfile: Dockerfile
+    networks:
+      - internal
+
+  order_service:
+    build:
+      context: ./OrderService
+      dockerfile: Dockerfile
+    networks:
+      - internal
+
+  inventory_service:
+    build:
+      context: ./InventoryService
+      dockerfile: Dockerfile
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
