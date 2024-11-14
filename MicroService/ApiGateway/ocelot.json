@@ -50,6 +50,14 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:80"
+    "BaseUrl": "http://api_gateway:80"
+  },
+  "AuthenticationOptions": {
+    "AuthenticationProviderKey": "JwtBearer",
+    "RequireHttpsMetadata": false,
+    "ApiName": "gateway"
+  },
+  "SecurityOptions": {
+    "AllowedScopes": [ "gateway" ]
   }
 }

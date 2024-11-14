@@ -1,15 +1,18 @@
+version: '3.4'
+
 services:
   api_gateway:
     build:
       context: ./ApiGateway
       dockerfile: Dockerfile
     ports:
-      - 80:80
+      - "80:80"
       - "443:443"
     environment:
-      - JwtSettings__Issuer=issuer
-      - JwtSettings__Audience=audience
-      - JwtSettings__Secret=secretKey
+      JwtSettings__Issuer: "http://auth_service:7025"
+      JwtSettings__Audience: "api"
+      JwtSettings__Secret: "secretKey"
+      ASPNETCORE_ENVIRONMENT: "Production"
     depends_on:
       - auth_service
       - product_service
@@ -17,34 +20,57 @@ services:
       - inventory_service
     networks:
       - internal
+    restart: always
 
   auth_service:
     build:
       context: ./AuthService
       dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
     networks:
       - internal
+    restart: always
 
   product_service:
     build:
       context: ./ProductService
       dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
     networks:
       - internal
+    restart: always
 
   order_service:
     build:
       context: ./OrderService
       dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
     networks:
       - internal
+    restart: always
 
   inventory_service:
     build:
       context: ./InventoryService
       dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
     networks:
       - internal
+    restart: always
+
+  consul:
+    image: consul:latest
+    container_name: consul
+    command: "agent -dev -client=0.0.0.0"
+    ports:
+      - "8500:8500"  # Consul UI için
+    networks:
+      - internal
+    restart: always
 
 networks:
   internal:
