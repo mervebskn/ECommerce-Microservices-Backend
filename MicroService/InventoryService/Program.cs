@@ -1,3 +1,4 @@
+using Consul;
 using EventBus.Abstractions;
 using EventBus.Connections;
 using EventBus.Events;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RabbitMQ.Client;
+using ServiceDiscoveryConsul;
 using System;
 using System.Text;
 
@@ -29,6 +31,15 @@ builder.Services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
         //Password = builder.Configuration["EventBus:Password"]
     };
     return new RabbitMQPersistentConnection(connectionFactory);
+});
+
+//consul client yapýlandýr
+builder.Services.AddSingleton<IConsulClient, ConsulClient>(sp =>
+{
+    return new ConsulClient(config =>
+    {
+        config.Address = new Uri("http://localhost:8500"); //consul url
+    });
 });
 
 builder.Services.AddSingleton<IEventBus, EventBusRabbitMQ>();
@@ -58,6 +69,22 @@ app.UseHttpsRedirection();
 
 //app.UseAuthentication();
 app.UseAuthorization();
+
+//consul servis kaydý
+var consulServiceId = $"{builder.Environment.ApplicationName}-{Guid.NewGuid()}";
+var consulService = new ConsulServiceRegistration(
+    consulServiceId,
+    "inventory-service", //servis adý
+    5246, // Servis portu
+    "inventory_service" //docker konteyner adý
+);
+await consulService.RegisterService();
+
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.ApplicationStopping.Register(async () =>
+{
+    await consulService.DeregisterService();
+});
 
 app.MapControllers();
 

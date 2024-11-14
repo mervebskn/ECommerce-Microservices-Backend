@@ -4,9 +4,12 @@ using AuthService.Repositories;
 using Common.Utils;
 using Consul;
 using Microsoft.AspNetCore.Authentication;
+using ServiceDiscoveryConsul;
+using System.ComponentModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Consul client yapýlandýrmasý
 builder.Services.AddSingleton<IConsulClient, ConsulClient>(sp =>
 {
     return new ConsulClient(config =>
@@ -37,22 +40,20 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-var consulClient = app.Services.GetRequiredService<IConsulClient>();
-var serviceId = $"{builder.Environment.ApplicationName}-{Guid.NewGuid()}"; // Servis ID'si
-var registration = new AgentServiceRegistration()
-{
-    ID = serviceId,
-    Service = new AgentService
-    {
-        ID = serviceId,
-        Service = builder.Environment.ApplicationName,
-        Address = "localhost", // Servis adresi
-        Port = 5000, // Servis portu
-        Tags = new[] { "auth", "api" } // Gerekirse etiketler ekleyin
-    }
-};
+var serviceId = $"{builder.Environment.ApplicationName}-{Guid.NewGuid()}";  // Benzersiz servis ID'si
+var serviceName = "auth-service";  // Servis adý
+var servicePort = 5212;
+var serviceAddress = "auth_service"; //container-name
 
-await consulClient.Agent.ServiceRegister(registration);
+var consulService = new ConsulServiceRegistration(serviceId, serviceName, servicePort, serviceAddress);
+await consulService.RegisterService();
+
+//uygulama kapanýrken Consul kaydýný siler
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.ApplicationStopping.Register(async () =>
+{
+    await consulService.DeregisterService();
+});
 
 app.MapControllers();
 

@@ -1,3 +1,4 @@
+using Consul;
 using EventBus.Abstractions;
 using EventBus.Connections;
 using EventBus.Implementations;
@@ -9,6 +10,7 @@ using ProductService.Data;
 using ProductService.Repositories;
 using ProductService.Services;
 using RabbitMQ.Client;
+using ServiceDiscoveryConsul;
 using System;
 using System.Text;
 
@@ -16,9 +18,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// Database baðlantýsý
 builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// RabbitMQ baðlantýsý ve Event Bus konfigürasyonu
 builder.Services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
 {
     var connectionFactory = new ConnectionFactory()
@@ -55,6 +59,16 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
     };
 });
+
+//consul client yapýlandýr
+builder.Services.AddSingleton<IConsulClient, ConsulClient>(sp =>
+{
+    return new ConsulClient(config =>
+    {
+        config.Address = new Uri("http://localhost:8500"); //consul url
+    });
+});
+
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProdService>();
 
@@ -73,6 +87,22 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+//consul servis kaydý
+var consulServiceId = $"{builder.Environment.ApplicationName}-{Guid.NewGuid()}";
+var consulService = new ConsulServiceRegistration(
+    consulServiceId,
+    "product-service", //servis adý
+    5017, //servis portu
+    "product_service" //docker konteyner adý
+);
+await consulService.RegisterService();
+
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.ApplicationStopping.Register(async () =>
+{
+    await consulService.DeregisterService();
+});
 
 app.MapControllers();
 

@@ -9,7 +9,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      JwtSettings__Issuer: "http://auth_service:7025"
+      JwtSettings__Issuer: "http://auth_service:80"
       JwtSettings__Audience: "api"
       JwtSettings__Secret: "secretKey"
       ASPNETCORE_ENVIRONMENT: "Production"
@@ -38,6 +38,7 @@ services:
       dockerfile: Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:80"  #docker içindeki portu belirt
     networks:
       - internal
     restart: always
@@ -48,6 +49,7 @@ services:
       dockerfile: Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:80"
     networks:
       - internal
     restart: always
@@ -58,6 +60,7 @@ services:
       dockerfile: Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:80"
     networks:
       - internal
     restart: always
