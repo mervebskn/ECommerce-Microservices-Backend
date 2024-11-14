@@ -5,6 +5,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - 80:80
+      - "443:443"
+    environment:
+      - JwtSettings__Issuer=issuer
+      - JwtSettings__Audience=audience
+      - JwtSettings__Secret=secretKey
     depends_on:
       - auth_service
       - product_service
