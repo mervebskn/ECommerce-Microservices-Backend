@@ -5,7 +5,7 @@ using ProductService.Services;
 using FluentAssertions;
 using Common.Exceptions;
 
-namespace ProductService.Tests
+namespace ProductService.Tests.Unit
 {
     public class ProductServiceTests
     {
