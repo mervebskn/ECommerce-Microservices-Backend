@@ -1,4 +1,5 @@
 ﻿using Common.DTOs;
+using Common.Exceptions;
 using Common.Models;
 using ProductService.Abstractions;
 
@@ -35,7 +36,7 @@ namespace ProductService.Services
             var product = await _productRepository.GetProductById(id);
             if (product == null)
             {
-                return null; // veya throw new NotFoundException("Product not found");
+                throw new NotFoundException("Product not found"); // Exception fırlatılıyor.
             }
 
             return new ProductDto
