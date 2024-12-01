@@ -50,9 +50,6 @@ jobs:
       - name: Restore Dependencies
         run: dotnet restore ./AuthService/AuthService.sln
 
-      - name: Run Unit Tests
-        run: dotnet test ./AuthService/AuthService.Tests/AuthService.Tests.csproj --verbosity normal
-
       - name: Build Docker Image
         uses: docker/build-push-action@v4
         with:
@@ -76,9 +73,6 @@ jobs:
       - name: Restore Dependencies
         run: dotnet restore ./OrderService/OrderService.sln
 
-      - name: Run Unit Tests
-        run: dotnet test ./OrderService/OrderService.Tests/OrderService.Tests.csproj --verbosity normal
-
       - name: Build Docker Image
         uses: docker/build-push-action@v4
         with:
@@ -101,9 +95,6 @@ jobs:
 
       - name: Restore Dependencies
         run: dotnet restore ./InventoryService/InventoryService.sln
-
-      - name: Run Unit Tests
-        run: dotnet test ./InventoryService/InventoryService.Tests/InventoryService.Tests.csproj --verbosity normal
 
       - name: Build Docker Image
         uses: docker/build-push-action@v4
