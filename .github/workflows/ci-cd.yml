@@ -1,0 +1,134 @@
+name: CI/CD for Microservices Project
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  product-service:
+    name: Build and Deploy Product Service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0
+
+      - name: Restore Dependencies
+        run: dotnet restore ./ProductService/ProductService.sln
+
+      - name: Run Unit Tests
+        run: dotnet test ./ProductService/ProductService.Tests/ProductService.Tests.csproj --verbosity normal
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./ProductService
+          file: ./ProductService/Dockerfile
+          push: true
+          tags: your-dockerhub-username/product-service:latest
+
+  auth-service:
+    name: Build and Deploy Auth Service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0
+
+      - name: Restore Dependencies
+        run: dotnet restore ./AuthService/AuthService.sln
+
+      - name: Run Unit Tests
+        run: dotnet test ./AuthService/AuthService.Tests/AuthService.Tests.csproj --verbosity normal
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./AuthService
+          file: ./AuthService/Dockerfile
+          push: true
+          tags: your-dockerhub-username/auth-service:latest
+
+  order-service:
+    name: Build and Deploy Order Service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0
+
+      - name: Restore Dependencies
+        run: dotnet restore ./OrderService/OrderService.sln
+
+      - name: Run Unit Tests
+        run: dotnet test ./OrderService/OrderService.Tests/OrderService.Tests.csproj --verbosity normal
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./OrderService
+          file: ./OrderService/Dockerfile
+          push: true
+          tags: your-dockerhub-username/order-service:latest
+
+  inventory-service:
+    name: Build and Deploy Inventory Service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0
+
+      - name: Restore Dependencies
+        run: dotnet restore ./InventoryService/InventoryService.sln
+
+      - name: Run Unit Tests
+        run: dotnet test ./InventoryService/InventoryService.Tests/InventoryService.Tests.csproj --verbosity normal
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./InventoryService
+          file: ./InventoryService/Dockerfile
+          push: true
+          tags: your-dockerhub-username/inventory-service:latest
+
+  api-gateway:
+    name: Build and Deploy API Gateway
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./ApiGateway
+          file: ./ApiGateway/Dockerfile
+          push: true
+          tags: your-dockerhub-username/api-gateway:latest
